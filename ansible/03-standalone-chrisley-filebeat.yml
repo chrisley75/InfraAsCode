@@ -1,0 +1,8 @@
+- name: "Install and configure filebeat"
+#  hosts: www.chrisley.fr
+  hosts: "{{ target | default('nothing') }}"
+  roles:
+    - geerlingguy.filebeat 
+  vars:
+    ansible_user: ec2-user
+  become: true

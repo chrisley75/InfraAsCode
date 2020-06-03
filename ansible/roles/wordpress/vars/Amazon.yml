@@ -1,0 +1,16 @@
+# roles/wordpress/vars/main.yml
+---
+
+wordpress_repository: []
+
+wordpress_packages:
+  - php
+  - unzip                # for installing plugins
+
+wordpress_directory: '/var/www/html/'
+wordpress_httpd_configuration: '/etc/httpd/conf.d/wordpress.conf'
+wordpress_configuration: '/var/www/html/wp-config.php'
+wordpress_plugin_directory: "{{ wordpress_directory }}/wp-content/plugins"
+wordpress_theme_directory: "{{ wordpress_directory }}/wp-content/themes"
+wordpress_httpd_service: '/usr/lib/systemd/system/httpd.service'
+

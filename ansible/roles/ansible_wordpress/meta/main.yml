@@ -1,0 +1,19 @@
+galaxy_info:
+  author: sakibmoon
+  description: Install multiple wordpress via wp-cli in Debian/Ubuntu based system
+  company: Digiproltd
+  license: MIT
+  min_ansible_version: 2.4
+  platforms:
+    - name: Debian
+      versions:
+        -all
+    - name: Ubuntu
+      versions:
+        -all
+  galaxy_tags:
+    - wordpress
+    - wpcli
+    - web
+    - database
+dependencies: []

@@ -1,0 +1,378 @@
+# ==================================================
+# Christopher LEY - christopher.ley@ibm.com - IBM
+# Build infra, deploy, and setup with GitLab
+# ==================================================
+
+#### CHRISLEY
+
+stages:
+#  - check-code
+  - init
+  - create
+  - deploy
+  - test
+  - destroy
+
+#default:
+#  before_script:
+#    - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} 
+
+# ==================================================
+# Job templates
+# ==================================================
+
+####### Deployment AWS
+.terraform_init_job_aws_template: &terraform_init_job_aws_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - cd terraform/aws
+    - terraform init -var-file="../../env_variables/env.tfvars" 
+    - terraform plan -var-file="../../env_variables/env.tfvars"
+  image:
+#    name: hashicorp/terraform:light
+#    name: zenika/terraform-azure-cli:latest
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+.terraform_apply_job_aws_template: &terraform_apply_job_aws_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - cd terraform/aws
+    - terraform init -var-file="../../env_variables/env.tfvars"
+    - terraform apply -var-file="../../env_variables/env.tfvars" -auto-approve
+  image:
+#    name: hashicorp/terraform:light
+#    name: zenika/terraform-azure-cli:latest
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+.terraform_destroy_job_aws_template: &terraform_destroy_job_aws_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts  
+  script:
+    - cd terraform/aws
+    - terraform init -var-file="../../env_variables/env.tfvars"
+    - terraform destroy -auto-approve -var-file="../../env_variables/env.tfvars"
+  image:
+#    name: hashicorp/terraform:light
+#    name: zenika/terraform-azure-cli:latest
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+######## Deployment AZ
+
+.terraform_init_job_az_template: &terraform_init_job_az_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - cd terraform/azure
+    - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+    - terraform init -var-file="../../env_variables/env.tfvars"
+    - terraform plan -var-file="../../env_variables/env.tfvars"
+  image:
+#    name: hashicorp/terraform:light
+#    name: zenika/terraform-azure-cli:latest
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+.terraform_apply_job_az_template: &terraform_apply_job_az_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - cd terraform/azure
+    - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+    - terraform init -var-file="../../env_variables/env.tfvars"
+    - terraform apply -var-file="../../env_variables/env.tfvars" -auto-approve
+  image:
+#    name: hashicorp/terraform:light
+#    name: zenika/terraform-azure-cli:latest
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+.terraform_destroy_job_az_template: &terraform_destroy_job_az_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - cd terraform/azure
+    - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+    - terraform init -var-file="../../env_variables/env.tfvars"
+    - terraform destroy -auto-approve -var-file="../../env_variables/env.tfvars"
+  image:
+#    name: hashicorp/terraform:light
+#    name: zenika/terraform-azure-cli:latest
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+########## Create DNS entry
+
+.terraform_apply_job_dns_template: &terraform_apply_job_dns_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - cd terraform/dns
+    - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+    - az network public-ip list --output=table | grep "elk-cley-ip" | awk -F " " '{print"\""$4"\""}'
+    - curl -s -XGET http://consul.chrisley.fr:8500/v1/kv/tf/azure_state?raw | jq '.resources[] | select(.name == "elk-cley-ip") | .instances[].attributes.ip_address'
+    - echo ELK_PUBLIC_IP=$(az network public-ip list --output=table | grep "elk-cley-ip" | awk -F " " '{print"\""$4"\""}') > ../../env_variables/tmp.tfvars
+    - terraform init -var-file="../../env_variables/env.tfvars" -var-file="../../env_variables/tmp.tfvars"
+#    - terraform plan -var-file="../../env_variables/env.tfvars" -var-file="../../env_variables/tmp.tfvars"
+    - terraform apply -var-file="../../env_variables/env.tfvars" -var-file="../../env_variables/tmp.tfvars" -auto-approve
+  image:
+#    name: chrisley75/terraform_curl_wget:v2
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+######### Delete DNS entry
+
+.terraform_destroy_job_dns_template: &terraform_destroy_job_dns_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - cd terraform/dns
+    - terraform init -var-file="../../env_variables/env.tfvars" -var-file="../../env_variables/tmp.tfvars"
+    - terraform destroy -var-file="../../env_variables/env.tfvars" -var-file="../../env_variables/tmp.tfvars" -auto-approve
+  image:
+#    name: chrisley75/terraform_curl_wget:v2
+    name: chrisley75/chrisley_custom:v3
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+#      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/usr/local/go/bin:/usr/local/go/bin/src/github.com/hashicorp/consul/bin/consul'
+
+########### Ansible: application Deployment
+
+.ansible_deployment_job_template: &ansible_deployment_job_definition 
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - chmod -R 755 ansible
+    - cd ansible
+    - chmod 600 ../files/demo_chrisley_rsa
+    - 'ansible-playbook -e target="wordpress" 01-standalone-chrisley.yml  --private-key=../files/demo_chrisley_rsa'
+#    - 'ansible-playbook -e target="wordpress" 01-standalone-chrisley.yml  --private-key=../files/demo_chrisley_rsa --list-host'
+
+  image:
+    name: mullnerz/ansible-playbook
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+########### Ansible: ELK Deployment
+
+.ansible_deployment_elk_job_template: &ansible_deployment_elk_job_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - chmod -R 755 ansible
+    - cd ansible
+    - chmod 600 ../files/demo_chrisley_rsa
+    - 'ansible-playbook -e target="elk" 02-elasticsearch_playbook.yml --private-key=../files/demo_chrisley_rsa'
+#    - 'ansible-playbook -e target="wordpress" 01-standalone-chrisley.yml  --private-key=../files/demo_chrisley_rsa --list-host'
+
+  image:
+    name: mullnerz/ansible-playbook
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+
+########### Ansible: Filebeat Deployment
+
+.ansible_deployment_filebeat_job_template: &ansible_deployment_filebeat_job_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - chmod -R 755 ansible
+    - cd ansible
+    - chmod 600 ../files/demo_chrisley_rsa
+    - 'ansible-playbook -e target="wordpress" 03-standalone-chrisley-filebeat.yml  --private-key=../files/demo_chrisley_rsa'
+#    - 'ansible-playbook -e target="wordpress" 01-standalone-chrisley.yml  --private-key=../files/demo_chrisley_rsa --list-host'
+
+  image:
+    name: mullnerz/ansible-playbook
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+########### Ansible: Metricbeat Deployment
+
+.ansible_deployment_metricbeat_job_template: &ansible_deployment_metricbeat_job_definition
+  tags:
+    - ibm
+    - aws
+    - azure
+    - gts
+  script:
+    - chmod -R 755 ansible
+    - cd ansible
+    - chmod 600 ../files/demo_chrisley_rsa
+    - 'ansible-playbook -e target="wordpress" 04-standalone-chrisley-metricbeat.yml  --private-key=../files/demo_chrisley_rsa'
+#    - 'ansible-playbook -e target="wordpress" 01-standalone-chrisley.yml  --private-key=../files/demo_chrisley_rsa --list-host'
+
+  image:
+    name: mullnerz/ansible-playbook
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+# ==================================================
+# Stage: init
+# ==================================================
+core-aws-init-job-aws:
+  <<: *terraform_init_job_aws_definition
+  stage: init
+
+
+core-azure-init-job-az:
+  <<: *terraform_init_job_az_definition
+  stage: init
+
+# ==================================================
+# Stage: create
+# ==================================================
+# Deploy automaticaly
+core-aws-create-job:
+  <<: *terraform_apply_job_aws_definition
+  stage: create
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
+
+# Deploy automaticaly
+core-azure-create-job:
+  <<: *terraform_apply_job_az_definition
+  stage: create
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
+
+# ==================================================
+# Stage: create Services Cardinaux
+# ==================================================
+# Deploy automaticaly
+sc-create-job-dns:
+  <<: *terraform_apply_job_dns_definition
+  stage: create
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
+
+# ==================================================
+# Stage: deploy Application
+# ==================================================
+# Deploy automaticaly
+appli-wordpress-job:
+  <<: *ansible_deployment_job_definition
+  stage: deploy
+#  when: manual
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
+
+# Deploy automaticaly
+appli-elk-job:
+  <<: *ansible_deployment_elk_job_definition
+  stage: deploy
+#  when: manual
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
+
+# Deploy automaticaly
+appli-filebeat-job:
+  <<: *ansible_deployment_filebeat_job_definition
+  stage: deploy
+#  when: manual
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
+
+# Deploy automaticaly
+appli-metricbeat-job:
+  <<: *ansible_deployment_metricbeat_job_definition
+  stage: deploy
+#  when: manual
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
+
+# ==================================================
+# Stage: destroy
+# ==================================================
+core-aws-destroy-job:
+  <<: *terraform_destroy_job_aws_definition
+  stage: destroy
+  when: manual
+
+core-azure-destroy-job:
+  <<: *terraform_destroy_job_az_definition
+  stage: destroy
+  when: manual
+
+sc-dns-destroy-job:
+  <<: *terraform_destroy_job_dns_definition
+  stage: destroy
+  when: manual

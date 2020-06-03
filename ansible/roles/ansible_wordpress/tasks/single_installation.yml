@@ -1,0 +1,95 @@
+---
+- name: Ensure that datbase is present
+  mysql_db:
+    name: "{{ wp_single.dbname }}"
+    state: present
+  when: ( wp_single.dbcreate | default(wp_defaults.dbcreate) )
+  tags:
+    - database
+
+- name: Create and assign user to database
+  mysql_user:
+    name: "{{ wp_single.dbuser }}"
+    host: "{{ wp_single.dbhost | default(wp_defaults.dbhost) }}"
+    password: "{{ wp_single.dbpass }}"
+    priv: "{{ wp_single.dbname }}.*:ALL"
+    state: present
+  when: ( wp_single.dbcreate | default(wp_defaults.dbcreate) )
+  tags:
+    - database
+
+- name: create directory if not exist
+  file:
+    path: "{{ wp_single.path }}"
+    state: directory
+    mode: 0755
+    owner: "{{ server_user | default(wp_defaults.server_user) }}"
+    group: "{{ server_group | default(wp_defaults.server_group) }}"
+  tags:
+    - wordpress-install
+
+- name: check if wordpress file exists
+  stat:
+    path: "{{ wp_single.path }}/index.php"
+  register: wp_index_file
+  tags:
+    - wordpress-install-check
+
+- name: Check if wp-config exist
+  stat:
+    path: "{{ wp_single.path }}/wp-config.php"
+  register: wp_config_file
+  tags:
+    - wordpress-install-check
+
+- name: check if wordpress is installed
+  command: "{{ wp_cli_command_name }} core is-installed"
+  args:
+    chdir: "{{ wp_single.path }}"
+  register: wordpress_installed
+  become: no
+  failed_when: false
+  changed_when: false
+  tags:
+    - wordpress-install-check
+
+- name: Download Wordpress core
+  command: "{{ wp_cli_command_name }} core download"
+  args:
+    chdir: "{{ wp_single.path }}"
+  when: not wp_index_file.stat.exists
+  become: yes
+  become_user: "{{ server_user | default(wp_defaults.server_user) }}"
+  tags:
+    - wordpress-install
+
+- name: Create Wordpress Config
+  command: >
+    {{ wp_cli_command_name }} config create
+    --dbname={{ wp_single.dbname }}
+    --dbuser={{ wp_single.dbuser }}
+    --dbpass={{ wp_single.dbpass }}
+    --dbhost={{ wp_single.dbhost | default(wp_defaults.dbhost) }}
+  args:
+    chdir: "{{ wp_single.path }}"
+  when: not wp_config_file.stat.exists
+  become: yes
+  become_user: "{{ server_user | default(wp_defaults.server_user) }}"
+  tags:
+    - wordpress-install
+
+- name: Install Wordpress
+  command: >
+    {{ wp_cli_command_name }} core install
+    --url={{ wp_single.url }}
+    --title='{{ wp_single.title | default(wp_defaults.title) }}'
+    --admin_user={{ wp_single.admin_user }}
+    --admin_password={{ wp_single.admin_password }}
+    --admin_email={{ wp_single.admin_email }}
+  args:
+    chdir: "{{ wp_single.path }}"
+  when: wordpress_installed.rc != 0
+  become: yes
+  become_user: "{{ server_user | default(wp_defaults.server_user) }}"
+  tags:
+    - wordpress-install

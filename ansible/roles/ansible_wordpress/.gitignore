@@ -1,0 +1,6 @@
+*.retry
+*/__pycache__
+*.pyc
+tags
+tags.lock
+tags.retry

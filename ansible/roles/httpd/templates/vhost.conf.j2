@@ -1,0 +1,24 @@
+{{ ansible_managed | comment }}
+
+{% if item.backend_url is defined %}
+LoadModule proxy_module {{ httpd_modules_path }}/mod_proxy.so
+LoadModule proxy_http_module {{ httpd_modules_path }}/mod_proxy_http.so
+{% endif %}
+
+<VirtualHost *:{{ httpd_port }}>
+   ServerName {{ item.servername }}
+{% if item.documentroot is defined %}
+   DocumentRoot "{{ item.documentroot }}"
+{% endif %}
+{% if item.backend_url is defined %}
+{% if "https" in item.backend_url %}
+    SSLProxyEngine on
+{% endif %}
+   ProxyPreserveHost On
+   ProxyPass / {{ item.backend_url }}
+   ProxyPassReverse / {{ item.backend_url }}
+{% endif %}
+{% if item.remote is defined %}
+  ProxyRemote * {{ item.remote }}
+{% endif %}
+</VirtualHost>

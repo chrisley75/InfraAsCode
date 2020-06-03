@@ -1,0 +1,33 @@
+---
+haproxy_socket: /var/lib/haproxy/stats
+haproxy_chroot: /var/lib/haproxy
+haproxy_user: haproxy
+haproxy_group: haproxy
+
+# Frontend settings.
+haproxy_frontend_name: 'hafrontend'
+haproxy_frontend_bind_address: '*'
+haproxy_frontend_port: 80
+# disable http mode and enable tcp mode
+#haproxy_frontend_mode: 'http'
+haproxy_frontend_mode: 'tcp'
+
+# Backend settings.
+haproxy_backend_name: 'habackend'
+# disable http mode and enable tcp mode
+haproxy_backend_mode: 'tcp'
+#haproxy_backend_mode: 'http'
+haproxy_backend_balance_method: 'roundrobin'
+#haproxy_backend_httpchk: 'HEAD / HTTP/1.1\r\nHost:localhost'
+haproxy_backend_httpchk:
+
+# List of backend servers.
+haproxy_backend_servers:
+  - name: web01
+    address: webintra01.chrisley.fr:80
+#  - name: web02
+#    address: webintra02.chrisley.fr:80
+#  - name: web03
+#    address: 172.31.47.222:80
+# Extra global vars (see README for example usage).
+haproxy_global_vars: []

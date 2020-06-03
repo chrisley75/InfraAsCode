@@ -1,0 +1,9 @@
+---
+# Install wordpress for all defined vhosts
+- include_tasks: single_installation.yml
+  loop: "{{ wp_details }}"
+  loop_control:
+    loop_var: wp_single
+  tags:
+    - wordpress
+    - database

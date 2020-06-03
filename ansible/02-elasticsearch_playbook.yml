@@ -1,0 +1,9 @@
+- name: "Install and configure Elasticsearch"
+  hosts: "{{ target | default('nothing') }}"
+  roles:
+    - elastic.elasticsearch
+    - geerlingguy.kibana
+    - geerlingguy.logstash 
+  vars:
+    ansible_user: chrisley
+  become: true 

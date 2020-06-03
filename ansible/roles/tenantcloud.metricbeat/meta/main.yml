@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  role_name: metricbeat
+  author: Igor Bronovskyi
+  description: Install Metricbeat on testing servers
+  company: "TenantCloud LLC"
+
+  issue_tracker_url: https://github.com/tenantcloud/metricbeat/issues
+
+  license: BSD
+
+  min_ansible_version: 2.4
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - trusty
+        - xenial
+        - bionic
+    - name: Debian
+      versions:
+        - jessie
+        - stretch
+
+  galaxy_tags:
+    - filebeat
+    - elk
+    - tenantcloud

@@ -1,0 +1,13 @@
+---
+# tasks file for ansible-wordpress-install
+- include_tasks: install_wp_cli.yml
+  when: ansible_os_family == 'Debian'
+  tags:
+    - wp-cli
+
+- include_tasks: install_wp.yml
+  when: ansible_os_family == 'Debian'
+  tags:
+    - wordpress
+    - mysql
+    - database

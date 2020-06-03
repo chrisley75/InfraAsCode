@@ -1,0 +1,104 @@
+---
+# tasks file for httpd
+- name: install apache httpd
+  package:
+    name: "{{ httpd_packages }}"
+    state: present
+  register: httpd_install_apache_httpd
+  until: httpd_install_apache_httpd is succeeded
+  retries: 3
+
+- name: install requirements
+  pip:
+    name: "{{ httpd_requirements }}"
+    state: present
+  register: httpd_install_requirements
+  until: httpd_install_requirements is succeeded
+  retries: 3
+
+- name: modify selinux settings
+  seboolean:
+    name: "{{ item }}"
+    state: yes
+    persistent: yes
+  when:
+    - ansible_selinux.status is defined
+    - ansible_selinux.status == "enabled"
+  with_items:
+    - "{{ httpd_sebooleans }}"
+
+- name: create ssl directory
+  file:
+    path: "{{ httpd_config_directory }}/ssl"
+    state: directory
+
+- name: create ssl key
+  openssl_privatekey:
+    path: "{{ httpd_config_directory }}/ssl/{{ httpd_ssl_servername }}.key"
+  register: key
+
+- name: create ssl csr
+  openssl_csr:
+    path: "{{ httpd_config_directory }}/ssl/{{ httpd_ssl_servername }}.csr"
+    privatekey_path: "{{ key.filename }}"
+    common_name: "{{ httpd_ssl_servername }}"
+  register: csr
+
+- name: create ssl certificates
+  openssl_certificate:
+    path: "{{ httpd_config_directory }}/ssl/{{ httpd_ssl_servername }}.crt"
+    privatekey_path: "{{ csr.privatekey }}"
+    csr_path: "{{ csr.filename }}"
+    provider: selfsigned
+
+- name: configure ssl
+  template:
+    src: ssl.conf.j2
+    dest: "{{ httpd_config_directory }}/ssl.conf"
+  notify:
+    - test httpd configuration validity
+    - restart httpd
+
+- name: configure locations
+  template:
+    src: location.conf.j2
+    dest: "{{ httpd_config_directory }}/{{ item.name }}.conf"
+  with_items:
+    - "{{ httpd_locations }}"
+  notify:
+    - test httpd configuration validity
+    - restart httpd
+  when:
+    - httpd_locations is defined
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: configure vhosts
+  template:
+    src: vhost.conf.j2
+    dest: "{{ httpd_config_directory }}/{{ item.name }}.conf"
+  with_items:
+    - "{{ httpd_vhosts }}"
+  notify:
+    - test httpd configuration validity
+    - restart httpd
+  when:
+    - httpd_vhosts is defined
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: configure redirect from http to https
+  template:
+    src: default_vhost.conf.j2
+    dest: "{{ httpd_config_directory }}/default_vhost.conf"
+  notify:
+    - test httpd configuration validity
+    - restart httpd
+
+- name: start and enable httpd
+  service:
+    name: "{{ httpd_service }}"
+    state: started
+    enabled: yes
+  when:
+    - ansible_virtualization_type != "docker"

@@ -1,0 +1,8 @@
+- name: "Install and configure Metricbeat"
+#  hosts: www.chrisley.fr
+  hosts: "{{ target | default('nothing') }}"
+  roles:
+    - hmschreck.metricbeat 
+  vars:
+    ansible_user: ec2-user
+  become: true

@@ -1,0 +1,5 @@
+## Remove sensitive access files
+env_variables/aws_vars.tfvars
+env_variables/azure_access_key.conf
+env_variables/azure_vars.tfvars
+env_variables/env.tfvars

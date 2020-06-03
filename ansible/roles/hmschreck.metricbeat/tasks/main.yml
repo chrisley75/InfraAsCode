@@ -1,0 +1,16 @@
+---
+- name: Add OS tag
+  set_fact:
+    metricbeat_tags: "{{ metricbeat_tags }} + [ '{{ ansible_distribution }}' ]"
+
+- name: Install metricbeat
+  import_tasks: mac.yml
+  when: ansible_os_family == "Darwin"
+
+- name: Install metricbeat
+  import_tasks: rhel.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Install metricbeat
+  import_tasks: debian.yml
+  when: ansible_os_family == "Debian"

@@ -1,0 +1,5 @@
+---
+elasticsearch_version: "7.x"
+elasic_repo: "deb https://artifacts.elastic.co/packages"
+release_version: "7.5.2"
+metricbeat_daemon_file: "/lib/systemd/system/metricbeat.service"

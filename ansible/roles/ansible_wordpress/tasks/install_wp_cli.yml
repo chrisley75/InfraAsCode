@@ -1,0 +1,18 @@
+---
+# Install wp-cli
+- name: check if wp-cli is installed
+  shell: command -v "{{ wp_cli_command_name }}" > /dev/null 2>&1
+  register: wp_cli_command_exist
+  failed_when: false
+  changed_when: false
+  tags:
+    - wp-cli-check
+
+- name: Install wp-cli
+  get_url:
+    url: "{{ wp_cli_phar_url }}"
+    dest: "{{ wp_cli_install_path }}/{{ wp_cli_command_name }}"
+    mode: 0755
+  when: wp_cli_command_exist.rc != 0
+  tags:
+    - wp-cli-install

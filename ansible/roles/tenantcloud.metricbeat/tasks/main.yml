@@ -1,0 +1,51 @@
+---
+- name: Add Elastic GPG Key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Elastic repository
+  apt_repository:
+    repo: "{{ elasic_repo }}/{{ elasticsearch_version }}/apt stable main"
+    state: present
+    update_cache: true
+
+- name: Stop metricbeat
+  service:
+    name: metricbeat
+    state: stopped
+  ignore_errors: true
+
+- name: Install Metricbeat
+  apt:
+    name: "metricbeat={{ release_version }}"
+  notify:
+    - Stop metricbeat
+
+- name: Add confiration files
+  copy:
+    src: 'files/etc/metricbeat/modules.d/{{ item }}.tpl'
+    dest: '/etc/metricbeat/modules.d/{{ item }}'
+  loop:
+    - system.yml
+    - nginx.yml
+    - php_fpm.yml
+
+- name: Add confiration files
+  template:
+    src: 'files/etc/metricbeat/metricbeat.yml.tpl'
+    dest: '/etc/metricbeat/metricbeat.yml'
+
+- name: Change logging configuration
+  lineinfile:
+    path: "{{ item.path }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { path: '{{ metricbeat_daemon_file }}', regexp: '^Environment="BEAT_LOG', line: '#Environment="BEAT_LOG_OPTS=-e"' }
+    - { path: '{{ metricbeat_daemon_file }}', regexp: '^ExecStart=', line: 'ExecStart=/usr/share/metricbeat/bin/metricbeat $BEAT_CONFIG_OPTS $BEAT_PATH_OPTS' }
+
+- name: Restart metricbeat
+  service:
+    name: metricbeat
+    state: restarted

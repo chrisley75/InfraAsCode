@@ -1,0 +1,26 @@
+---
+
+allow_duplicates: yes
+
+galaxy_info:
+  author: Christopher LEY
+  description: Elasticsearch for Linux
+  license: "license (Apache)"
+  min_ansible_version: 2.5.0
+  platforms:
+  - name: EL
+    versions:
+    - 6
+    - 7
+  - name: Debian
+    versions:
+    - all
+  - name: Ubuntu
+    versions:
+    - all
+  - galaxy_tags:
+    - elastic
+    - elasticsearch
+    - elk
+    - logging
+dependencies: []

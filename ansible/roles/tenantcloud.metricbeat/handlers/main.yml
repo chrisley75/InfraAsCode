@@ -1,0 +1,16 @@
+---
+
+- name: Stop metricbeat
+  service:
+    name: metricbeat
+    state: stopped
+
+- name: Start metricbeat
+  service:
+    name: metricbeat
+    state: started
+
+- name: Restart metricbeat
+  service:
+    name: metricbeat
+    state: restarted

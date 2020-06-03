@@ -1,0 +1,69 @@
+---
+# vars file for httpd
+httpd_requirements:
+  - pyopenssl
+
+httpd_sebooleans:
+  - httpd_can_network_connect
+
+_httpd_packages:
+  default:
+    - httpd
+    - mod_ssl
+    - openssl
+  Alpine:
+    - apache2
+    - apache2-ssl
+    - apache2-proxy
+  Archlinux:
+    - apache
+  Debian:
+    - apache2
+  openSUSE Leap:
+    - httpd
+  Ubuntu:
+    - apache2
+
+httpd_packages: "{{ _httpd_packages[ansible_distribution] | default(_httpd_packages['default']) }}"
+
+_httpd_service:
+  default: httpd
+  Alpine: apache2
+  Debian: apache2
+  openSUSE Leap: apache2
+  Ubuntu: apache2
+
+httpd_service: "{{ _httpd_service[ansible_distribution] | default(_httpd_service['default']) }}"
+
+_httpd_config_directory:
+  default: /etc/httpd/conf.d
+  Alpine: /etc/apache2/conf.d
+  Archlinux: /etc/httpd/conf/extra
+  Debian: /etc/apache2/conf-enabled
+  openSUSE Leap: /etc/apache2/conf.d
+  Ubuntu: /etc/apache2/conf-enabled
+
+httpd_config_directory: "{{ _httpd_config_directory[ansible_distribution] | default(_httpd_config_directory['default']) }}"
+
+_httpd_data_directory:
+  default: /var/www/html
+  Alpine: /var/www/{{ httpd_servername | default(ansible_fqdn) }}
+  Archlinux: /src/http
+  openSUSE Leap: /src/www/htdocs
+
+httpd_data_directory: "{{ _httpd_data_directory[ansible_distribution] | default(_httpd_data_directory['default']) }}"
+
+_httpd_modules_path:
+  default: modules
+  Debian: /usr/lib/apache2/modules
+  Ubuntu: /usr/lib/apache2/modules
+  openSUSE Leap: /usr/lib64/apache2-prefork
+
+httpd_modules_path: "{{ _httpd_modules_path[ansible_distribution] | default(_httpd_modules_path['default']) }}"
+
+_httpd_binary:
+  default: httpd
+  Debian: apachectl
+  Ubuntu: apachectl
+
+httpd_binary: "{{ _httpd_binary[ansible_distribution] | default(_httpd_binary['default']) }}"

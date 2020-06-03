@@ -1,0 +1,20 @@
+# .travis.yml Execution script for role tests on Travis-CI
+---
+sudo: required
+
+env:
+  matrix:
+    - DISTRIBUTION: centos
+      VERSION: 7
+    - DISTRIBUTION: fedora
+      VERSION: 28
+
+services:
+  - docker
+
+before_install: []
+
+script: []
+
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/
