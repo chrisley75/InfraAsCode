@@ -3,3 +3,7 @@ env_variables/aws_vars.tfvars
 env_variables/azure_access_key.conf
 env_variables/azure_vars.tfvars
 env_variables/env.tfvars
+
+## Remove SSH private Key
+files/demo_chrisley_rsa
+
