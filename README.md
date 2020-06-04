@@ -1,5 +1,8 @@
-# IaC
-Infrastructure as Code 
+# IaC : Infrastructure as Code
+##### What is IaC?
+Infrastructure as Code (IaC) automates the provisioning of infrastructure, enabling your organization to develop, deploy, and scale cloud applications with greater speed, less risk, and reduced cost.
+
+*source: https://www.ibm.com/cloud/learn/infrastructure-as-code*
 
 # Presentation
 The purpose of this demo is to demonstrate the possibilities of Infrastructure as Code (IaC) in a MultiCloud context.
@@ -25,3 +28,7 @@ Using a CICD pipeline.
 # HLD - High Level Diagram
 ![HLD Demo IaC](doc/user/images/HLD_demo_IaC-v2.png)
 
+# Author
+**Christopher LEY **
+SRE and MultiCloud Architect at IBM - IBM Services
+christopher.ley@ibm.com
