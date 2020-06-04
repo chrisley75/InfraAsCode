@@ -29,6 +29,6 @@ Using a CICD pipeline.
 ![HLD Demo IaC](doc/user/images/HLD_demo_IaC-v2.png)
 
 # Author
-**Christopher LEY **
+**Christopher LEY**
 SRE and MultiCloud Architect at IBM - IBM Services
 christopher.ley@ibm.com
