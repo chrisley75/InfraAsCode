@@ -553,13 +553,13 @@ core-aws-init-job-aws:
   <<: *terraform_init_job_aws_definition
   stage: init
 
-core-azure-init-job-az:
-  <<: *terraform_init_job_az_definition
-  stage: init
-
-#core-ibm-init-job-ibm:
-#  <<: *terraform_init_job_ibm_definition
+#core-azure-init-job-az:
+#  <<: *terraform_init_job_az_definition
 #  stage: init
+
+core-ibm-init-job-ibm:
+  <<: *terraform_init_job_ibm_definition
+  stage: init
 
 # ==================================================
 # Stage: create
@@ -575,19 +575,8 @@ core-aws-create-job:
     - prod
 
 # Deploy automaticaly
-core-azure-create-job:
-  <<: *terraform_apply_job_az_definition
-  stage: create
-#  when: manual
-  when: on_success
-  only:
-    - branches
-  except:
-    - prod
-
-## Deploy automaticaly
-#core-ibm-create-job:
-#  <<: *terraform_apply_job_ibm_definition
+#core-azure-create-job:
+#  <<: *terraform_apply_job_az_definition
 #  stage: create
 #  when: manual
 #  when: on_success
@@ -595,6 +584,17 @@ core-azure-create-job:
 #    - branches
 #  except:
 #    - prod
+
+# Deploy automaticaly
+core-ibm-create-job:
+  <<: *terraform_apply_job_ibm_definition
+  stage: create
+#  when: manual
+  when: on_success
+  only:
+    - branches
+  except:
+    - prod
 
 # ==================================================
 # Stage: create Services Cardinaux
@@ -611,19 +611,8 @@ core-azure-create-job:
 #    - prod
 
 # Deploy automaticaly
-#sc-create-aws_ibm-job-dns:
-#  <<: *terraform_apply_aws_ibm_job_dns_definition
-#  stage: create
-#  when: manual
-#  when: on_success
-#  only:
-#    - branches
-#  except:
-#    - prod
-
-# Deploy automaticaly
-sc-create-aws_az-job-dns:
-  <<: *terraform_apply_aws_az_job_dns_definition
+sc-create-aws_ibm-job-dns:
+  <<: *terraform_apply_aws_ibm_job_dns_definition
   stage: create
 #  when: manual
   when: on_success
@@ -631,6 +620,17 @@ sc-create-aws_az-job-dns:
     - branches
   except:
     - prod
+
+# Deploy automaticaly
+#sc-create-aws_az-job-dns:
+#  <<: *terraform_apply_aws_az_job_dns_definition
+#  stage: create
+#  when: manual
+#  when: on_success
+#  only:
+#    - branches
+#  except:
+#    - prod
 
 # ==================================================
 # Stage: deploy Application
@@ -658,19 +658,8 @@ appli-wordpress-job:
 #    - prod
 
 # Deploy automaticaly
-#appli-elk-on-IBM-job:
-#  <<: *ansible_deployment_elk_on_IBM_job_definition
-#  stage: deploy
-#  when: manual
-#  when: on_success
-#  only:
-#    - branches
-#  except:
-#    - prod
-
-# Deploy automaticaly
-appli-elk-on-AZ-job:
-  <<: *ansible_deployment_elk_on_AZ_job_definition
+appli-elk-on-IBM-job:
+  <<: *ansible_deployment_elk_on_IBM_job_definition
   stage: deploy
 #  when: manual
   when: on_success
@@ -678,6 +667,17 @@ appli-elk-on-AZ-job:
     - branches
   except:
     - prod
+
+## Deploy automaticaly
+#appli-elk-on-AZ-job:
+#  <<: *ansible_deployment_elk_on_AZ_job_definition
+#  stage: deploy
+#  when: manual
+#  when: on_success
+#  only:
+#    - branches
+#  except:
+#    - prod
 
 # Deploy automaticaly
 appli-filebeat-job:
@@ -753,27 +753,27 @@ core-aws-destroy-job:
   stage: destroy
   when: manual
 
-core-azure-destroy-job:
-  <<: *terraform_destroy_job_az_definition
-  stage: destroy
-  when: manual
-
-#core-ibm-destroy-job:
-#  <<: *terraform_destroy_job_ibm_definition
+#core-azure-destroy-job:
+#  <<: *terraform_destroy_job_az_definition
 #  stage: destroy
 #  when: manual
+
+core-ibm-destroy-job:
+  <<: *terraform_destroy_job_ibm_definition
+  stage: destroy
+  when: manual
 
 #sc-dns-destroy-job:
 #  <<: *terraform_destroy_job_dns_definition
 #  stage: destroy
 #  when: manual
 
-#sc-aws_ibm-dns-destroy-job:
-#  <<: *terraform_destroy_aws_ibm_job_dns_definition
-#  stage: destroy
-#  when: manual
-
-sc-aws_az-dns-destroy-job:
-  <<: *terraform_destroy_aws_az_job_dns_definition
+sc-aws_ibm-dns-destroy-job:
+  <<: *terraform_destroy_aws_ibm_job_dns_definition
   stage: destroy
   when: manual
+
+#sc-aws_az-dns-destroy-job:
+#  <<: *terraform_destroy_aws_az_job_dns_definition
+#  stage: destroy
+#  when: manual

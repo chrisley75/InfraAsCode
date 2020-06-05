@@ -1,0 +1,28 @@
+---
+- name: Install metricbeat from RPM
+  yum:
+    name: "https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-{{ elk_version }}-x86_64.rpm"
+  become: yes
+
+- name: Copy metricbeat configuration
+  template:
+    src: metricbeat.yml.j2
+    dest: "/etc/metricbeat/metricbeat.yml"
+    owner: root
+    mode: 0600
+  become: yes
+  notify: reload metricbeat
+
+- name: Enable metricbeat service
+  service:
+    name: metricbeat
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Set configuration dir
+  set_fact:
+    metricbeat_config_dir: "/etc/metricbeat"
+
+- name: Setup Metricbeat dashboards
+  shell: /usr/bin/metricbeat setup --dashboards

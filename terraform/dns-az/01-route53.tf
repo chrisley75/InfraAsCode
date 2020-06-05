@@ -10,25 +10,14 @@ data "aws_route53_zone" "chrisley" {
 # Creation des enregistrements (records) DNS pour eis-public=ip-public-server et ip-interne=ip-private-server
 # Creation des resolutions DNS
 # Déclaration IP Publique pour tous le serveurs ELK pour "elk azure"
-resource "aws_route53_record" "elkaz" {
+resource "aws_route53_record" "elk" {
   zone_id = "${data.aws_route53_zone.chrisley.zone_id}"
-  name    = "elkaz.chrisley.fr"
+  name    = "elk.chrisley.fr"
   type    = "A"
   ttl     = "300"
-  records = ["${var.ELK_PUBLIC_IP_AZ}"]
+  records = ["${var.ELK_PUBLIC_IP}"]
 }
 
-############ elk ibm
-# Creation des enregistrements (records) DNS pour eis-public=ip-public-server et ip-interne=ip-private-server
-# Creation des resolutions DNS
-# Déclaration IP Publique pour tous le serveurs ELK pour "elk ibm"
-resource "aws_route53_record" "elkibm" {
-  zone_id = "${data.aws_route53_zone.chrisley.zone_id}"
-  name    = "elkibm.chrisley.fr"
-  type    = "A"
-  ttl     = "300"
-  records = ["${var.ELK_PUBLIC_IP_IBM}"]
-}
 
 ############# www aws
 # declaration des instances pour recuperation du nom

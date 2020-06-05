@@ -1,0 +1,11 @@
+---
+elk_version: "7.7.0"
+mac_install_location: "/Applications/Metricbeat"
+elastic_search_address: "elkibm.chrisley.fr:9200"
+logstash_address: "elkibm.chrisley.fr:5044"
+configure_kibana: true
+kibana_address: "elkibm.chrisley.fr:5601"
+ilm_enabled: true
+metricbeat_reload: true
+metricbeat_reload_period: 5m
+metricbeat_tags: ["default"]

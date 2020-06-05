@@ -1,0 +1,14 @@
+---
+- name: Reload metricbeat mac
+  shell: launchctl unload /Library/LaunchDaemons/co.elastic.metricbeat.plist; launchctl load /Library/LaunchDaemons/co.elastic.metricbeat.plist
+  become: yes
+  when: ansible_os_family == "Darwin"
+  listen: "reload metricbeat"
+
+- name: Reload metricbeat linux
+  service:
+    name: metricbeat
+    state: restarted
+  become: yes
+  listen: "reload metricbeat"
+  when: ansible_os_family != "Darwin"

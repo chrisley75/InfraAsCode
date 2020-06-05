@@ -1,0 +1,8 @@
+- name: "Install and configure Metricbeat to IBM Cloud"
+#  hosts: www.chrisley.fr
+  hosts: "{{ target | default('nothing') }}"
+  roles:
+    - ibm-chrisley.metricbeat 
+  vars:
+    ansible_user: ec2-user
+  become: true

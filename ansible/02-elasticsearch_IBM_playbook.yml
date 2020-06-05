@@ -1,0 +1,9 @@
+- name: "Install and configure Elasticsearch on IBM Cloud"
+  hosts: "{{ target | default('nothing') }}"
+  roles:
+    - elastic.elasticsearch
+    - geerlingguy.kibana
+    - geerlingguy.logstash 
+  vars:
+    ansible_user: root
+  become: true 
